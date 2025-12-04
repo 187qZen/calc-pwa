@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор розміру труб профільних</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .calc-type {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .calc-btn {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #667eea;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .calc-btn.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .calc-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .result {
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            text-align: center;
+            display: none;
+        }
+        
+        .result.show {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .result-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+            margin: 10px 0;
+        }
+        
+        .result-label {
+            font-size: 1.2em;
+            color: #666;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .info-box {
+            background: #f0f4ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .info-box p {
+            margin: 5px 0;
+            color: #555;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Калькулятор розміру труб</h1>
+        <p class="subtitle">Розрахунок ваги та довжини труб</p>
+        
+        <form id="calculatorForm">
+            <!-- Тип виробу -->
+            <div class="form-group">
+                <label>Виріб</label>
+                <select id="productType" required>
+                    <option value="">Оберіть тип труби</option>
+                    <option value="round">🔵 Труба кругла</option>
+                    <option value="profile">⬜ Труба профільна</option>
+                </select>
+            </div>
+            
+            <!-- Матеріал -->
+            <div class="form-group">
+                <label>Матеріал</label>
+                <select id="material" required>
+                    <option value="">Оберіть матеріал</option>
+                    <option value="st3">Ст3 (7850 кг/м³)</option>
+                    <option value="st20">Ст20 (7850 кг/м³)</option>
+                    <option value="aisi304">AISI 304 (8000 кг/м³)</option>
+                    <option value="aisi316">AISI 316 (8000 кг/м³)</option>
+                </select>
+            </div>
+            
+            <!-- Параметри круглої труби -->
+            <div id="roundParams" class="hidden">
+                <div class="row">
+                    <div class="form-group">
+                        <label>Діаметр (мм)</label>
+                        <input type="number" id="diameter" step="0.1" min="0" placeholder="Наприклад: 50">
+                    </div>
+                    <div class="form-group">
+                        <label>Товщина стінки (мм)</label>
+                        <input type="number" id="wallThickness" step="0.1" min="0" placeholder="Наприклад: 3">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Параметри профільної труби -->
+            <div id="profileParams" class="hidden">
+                <div class="row">
+                    <div class="form-group">
+                        <label>Ширина (мм)</label>
+                        <input type="number" id="width" step="0.1" min="0" placeholder="Наприклад: 40">
+                    </div>
+                    <div class="form-group">
+                        <label>Висота (мм)</label>
+                        <input type="number" id="height" step="0.1" min="0" placeholder="Наприклад: 40">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Товщина стінки (мм)</label>
+                    <input type="number" id="profileWallThickness" step="0.1" min="0" placeholder="Наприклад: 2">
+                </div>
+            </div>
+            
+            <!-- Тип розрахунку -->
+            <div class="calc-type">
+                <button type="button" class="calc-btn active" data-type="lengthToWeight">
+                    Довжина → Вага
+                </button>
+                <button type="button" class="calc-btn" data-type="weightToLength">
+                    Вага → Довжина
+                </button>
+            </div>
+            
+            <!-- Поля вводу -->
+            <div id="lengthInput" class="form-group">
+                <label>Довжина (м)</label>
+                <input type="number" id="length" step="0.01" min="0" placeholder="Наприклад: 6" required>
+            </div>
+            
+            <div id="weightInput" class="form-group hidden">
+                <label>Вага (кг)</label>
+                <input type="number" id="weight" step="0.01" min="0" placeholder="Наприклад: 25.5">
+            </div>
+            
+            <button type="submit" class="submit-btn">🧮 Розрахувати</button>
+        </form>
+        
+        <!-- Результат -->
+        <div id="result" class="result">
+            <p class="result-label">Результат:</p>
+            <div class="result-value" id="resultValue">0</div>
+            <p class="result-label" id="resultUnit">кг</p>
+            
+            <div class="info-box">
+                <p><strong>Деталі розрахунку:</strong></p>
+                <p id="calcDetails"></p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Щільності матеріалів
+        const densities = {
+            st3: 7850,
+            st20: 7850,
+            aisi304: 8000,
+            aisi316: 8000
+        };
+        
+        let calculationType = 'lengthToWeight';
+        
+        // Перемикання типу розрахунку
+        document.querySelectorAll('.calc-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.calc-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                calculationType = this.dataset.type;
+                
+                if (calculationType === 'lengthToWeight') {
+                    document.getElementById('lengthInput').classList.remove('hidden');
+                    document.getElementById('weightInput').classList.add('hidden');
+                    document.getElementById('length').required = true;
+                    document.getElementById('weight').required = false;
+                } else {
+                    document.getElementById('lengthInput').classList.add('hidden');
+                    document.getElementById('weightInput').classList.remove('hidden');
+                    document.getElementById('length').required = false;
+                    document.getElementById('weight').required = true;
+                }
+            });
+        });
+        
+        // Перемикання параметрів труби
+        document.getElementById('productType').addEventListener('change', function() {
+            const roundParams = document.getElementById('roundParams');
+            const profileParams = document.getElementById('profileParams');
+            
+            if (this.value === 'round') {
+                roundParams.classList.remove('hidden');
+                profileParams.classList.add('hidden');
+                document.getElementById('diameter').required = true;
+                document.getElementById('wallThickness').required = true;
+                document.getElementById('width').required = false;
+                document.getElementById('height').required = false;
+                document.getElementById('profileWallThickness').required = false;
+            } else if (this.value === 'profile') {
+                roundParams.classList.add('hidden');
+                profileParams.classList.remove('hidden');
+                document.getElementById('diameter').required = false;
+                document.getElementById('wallThickness').required = false;
+                document.getElementById('width').required = true;
+                document.getElementById('height').required = true;
+                document.getElementById('profileWallThickness').required = true;
+            }
+        });
+        
+        // Розрахунок
+        document.getElementById('calculatorForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const productType = document.getElementById('productType').value;
+            const material = document.getElementById('material').value;
+            const density = densities[material];
+            
+            let result, details;
+            
+            if (productType === 'round') {
+                const diameter = parseFloat(document.getElementById('diameter').value) / 1000; // м
+                const wallThickness = parseFloat(document.getElementById('wallThickness').value) / 1000; // м
+                
+                if (calculationType === 'lengthToWeight') {
+                    const length = parseFloat(document.getElementById('length').value);
+                    // Вага = π × (D - t) × t × L × ρ
+                    const weight = Math.PI * (diameter - wallThickness) * wallThickness * length * density;
+                    result = weight.toFixed(2);
+                    details = `Труба кругла Ø${(diameter*1000).toFixed(1)}×${(wallThickness*1000).toFixed(1)} мм, довжина ${length} м`;
+                    document.getElementById('resultUnit').textContent = 'кг';
+                } else {
+                    const weight = parseFloat(document.getElementById('weight').value);
+                    // Довжина = W / (π × (D - t) × t × ρ)
+                    const length = weight / (Math.PI * (diameter - wallThickness) * wallThickness * density);
+                    result = length.toFixed(2);
+                    details = `Труба кругла Ø${(diameter*1000).toFixed(1)}×${(wallThickness*1000).toFixed(1)} мм, вага ${weight} кг`;
+                    document.getElementById('resultUnit').textContent = 'м';
+                }
+            } else {
+                const width = parseFloat(document.getElementById('width').value) / 1000; // м
+                const height = parseFloat(document.getElementById('height').value) / 1000; // м
+                const wallThickness = parseFloat(document.getElementById('profileWallThickness').value) / 1000; // м
+                
+                // Площа перерізу профільної труби
+                const area = 2 * wallThickness * (width + height - 2 * wallThickness);
+                
+                if (calculationType === 'lengthToWeight') {
+                    const length = parseFloat(document.getElementById('length').value);
+                    const weight = area * length * density;
+                    result = weight.toFixed(2);
+                    details = `Труба профільна ${(width*1000).toFixed(1)}×${(height*1000).toFixed(1)}×${(wallThickness*1000).toFixed(1)} мм, довжина ${length} м`;
+                    document.getElementById('resultUnit').textContent = 'кг';
+                } else {
+                    const weight = parseFloat(document.getElementById('weight').value);
+                    const length = weight / (area * density);
+                    result = length.toFixed(2);
+                    details = `Труба профільна ${(width*1000).toFixed(1)}×${(height*1000).toFixed(1)}×${(wallThickness*1000).toFixed(1)} мм, вага ${weight} кг`;
+                    document.getElementById('resultUnit').textContent = 'м';
+                }
+            }
+            
+            // Показати результат
+            document.getElementById('resultValue').textContent = result;
+            document.getElementById('calcDetails').textContent = details;
+            document.getElementById('result').classList.add('show');
+        });
+    </script>
+</body>
+</html>
